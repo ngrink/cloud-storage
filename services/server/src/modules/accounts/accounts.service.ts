@@ -1,28 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
+import { AccountsRepository } from './accounts.repository';
 import { AccountException } from './accounts.exception';
-import { Account } from './entities/account.entity';
-import { Profile } from './entities/profile.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { AccountDto } from './dto/account.dto';
 
 @Injectable()
 export class AccountsService {
-  constructor(
-    @InjectRepository(Account)
-    private readonly accountRepository: Repository<Account>,
-    @InjectRepository(Profile)
-    private readonly profileRepository: Repository<Profile>,
-  ) {}
+  constructor(private readonly accountsRepository: AccountsRepository) {}
 
   async createAccount(data: CreateAccountDto) {
-    const candidate = await this.accountRepository.findOneBy({
-      email: data.email,
-    });
+    const candidate = await this.accountsRepository.getAccountByEmail(
+      data.email,
+    );
     if (candidate) {
       throw AccountException.AccountEmailExists();
     }
@@ -32,55 +23,49 @@ export class AccountsService {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const profile = this.profileRepository.create({
-      ...data,
-    });
-    const account = this.accountRepository.create({
+    const account = await this.accountsRepository.createAccount({
       ...data,
       password: hashedPassword,
-      profile: profile,
     });
-    await this.accountRepository.save(account);
 
-    return new AccountDto(account);
+    return account;
   }
 
   async getAccounts() {
-    const result = await this.accountRepository.find();
-    const accounts = result.map((account) => new AccountDto(account));
+    const accounts = await this.accountsRepository.getAccounts();
 
     return accounts;
   }
 
   async getAccount(accountId: number) {
-    const account = await this.accountRepository.findOneBy({ id: accountId });
+    const account = await this.accountsRepository.getAccount(accountId);
     if (!account) {
       throw AccountException.AccountNotFound();
     }
 
-    return new AccountDto(account);
+    return account;
   }
 
   async getAccountByEmail(email: string) {
-    const account = await this.accountRepository.findOneBy({ email });
+    const account = await this.accountsRepository.getAccountByEmail(email);
     if (!account) {
       throw AccountException.AccountNotFound();
     }
 
-    return new AccountDto(account);
+    return account;
   }
 
   async updateProfile(accountId: number, profile: UpdateProfileDto) {
-    const account = await this.accountRepository.findOneBy({ id: accountId });
+    const account = await this.accountsRepository.updateProfile(
+      accountId,
+      profile,
+    );
     if (!account) {
       throw AccountException.AccountNotFound();
     }
-
-    Object.assign(account, { profile });
-    await account.save();
   }
 
   async deleteAccount(accountId: number) {
-    await this.accountRepository.softDelete({ id: accountId });
+    await this.accountsRepository.deleteAccount(accountId);
   }
 }
