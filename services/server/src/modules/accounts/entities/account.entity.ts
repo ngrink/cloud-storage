@@ -17,8 +17,9 @@ import {
 } from 'class-validator';
 import { Exclude } from 'class-transformer';
 
+import { Session } from '@/modules/auth';
+import { Role } from '../../auth/enums/roles.enum';
 import { Profile } from './profile.entity';
-import { Role } from './roles.entity';
 
 @Entity('accounts')
 export class Account extends BaseEntity {
