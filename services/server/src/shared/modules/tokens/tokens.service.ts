@@ -22,10 +22,18 @@ export class TokensService {
   }
 
   verifyAccessToken(token: string) {
+    try {
       return jwt.verify(token, this.configService.get('JWT_ACCESS_SECRET'));
+    } catch (error) {
+      return null;
+    }
   }
 
   verifyRefreshToken(token: string) {
+    try {
       return jwt.verify(token, this.configService.get('JWT_REFRESH_SECRET'));
+    } catch (error) {
+      return null;
+    }
   }
 }
