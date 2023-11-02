@@ -15,7 +15,7 @@ export class LoggerMiddleware implements NestMiddleware {
       const { statusCode } = res;
       const referer = req.headers['referer'] || '-';
       const userAgent = req.headers['user-agent'] || '-';
-      const contentLength = res.get('content-length');
+      const contentLength = res.get('content-length') || 0;
 
       const code = styleStatusCode(statusCode);
       const message =
