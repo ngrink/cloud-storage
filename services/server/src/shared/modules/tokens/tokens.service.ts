@@ -4,11 +4,14 @@ import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class TokensService {
+  private readonly isProduction =
+    this.configService.get('NODE_ENV') == 'production';
+
   constructor(private readonly configService: ConfigService) {}
 
   generateAccessToken(payload: object) {
     return jwt.sign(payload, this.configService.get('JWT_ACCESS_SECRET'), {
-      expiresIn: '15m',
+      expiresIn: this.isProduction ? '15m' : '1d',
     });
   }
 
@@ -19,10 +22,10 @@ export class TokensService {
   }
 
   verifyAccessToken(token: string) {
-    return jwt.verify(token, this.configService.get('JWT_ACCESS_SECRET'));
+      return jwt.verify(token, this.configService.get('JWT_ACCESS_SECRET'));
   }
 
   verifyRefreshToken(token: string) {
-    return jwt.verify(token, this.configService.get('JWT_REFRESH_SECRET'));
+      return jwt.verify(token, this.configService.get('JWT_REFRESH_SECRET'));
   }
 }
