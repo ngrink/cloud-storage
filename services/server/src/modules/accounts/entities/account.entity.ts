@@ -35,7 +35,7 @@ export class Account extends BaseEntity {
   @Exclude({ toPlainOnly: true })
   password: string;
 
-  @Column({ name: 'is_verified' })
+  @Column()
   @IsBoolean()
   isVerified: boolean = false;
 
@@ -43,13 +43,13 @@ export class Account extends BaseEntity {
   @IsArray()
   roles: Role[] = [Role.USER];
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at' })
+  @DeleteDateColumn()
   deletedAt: Date;
 
   @OneToOne(() => Profile, (profile) => profile.account, {
