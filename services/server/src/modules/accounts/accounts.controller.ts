@@ -23,7 +23,7 @@ export class AccountsController {
   */
   @Post()
   async createAccount(@Body() createAccountDto: CreateAccountDto) {
-    return this.accountsService.createAccount(createAccountDto);
+    return await this.accountsService.createAccount(createAccountDto);
   }
 
   /*

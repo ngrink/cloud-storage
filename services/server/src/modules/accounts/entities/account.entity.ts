@@ -15,6 +15,7 @@ import {
   IsNumber,
   IsStrongPassword,
 } from 'class-validator';
+import { Exclude } from 'class-transformer';
 
 import { Profile } from './profile.entity';
 import { Role } from './roles.entity';
@@ -31,6 +32,7 @@ export class Account extends BaseEntity {
 
   @Column()
   @IsStrongPassword({ minLength: 12 })
+  @Exclude({ toPlainOnly: true })
   password: string;
 
   @Column({ name: 'is_verified' })

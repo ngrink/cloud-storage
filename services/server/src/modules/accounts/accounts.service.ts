@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 
 import { AccountsRepository } from './accounts.repository';
 import { AccountException } from './accounts.exception';
+import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -10,7 +11,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 export class AccountsService {
   constructor(private readonly accountsRepository: AccountsRepository) {}
 
-  async createAccount(data: CreateAccountDto) {
+  async createAccount(data: CreateAccountDto): Promise<Account> {
     const candidate = await this.accountsRepository.getAccountByEmail(
       data.email,
     );
@@ -31,13 +32,13 @@ export class AccountsService {
     return account;
   }
 
-  async getAccounts() {
+  async getAccounts(): Promise<Account[]> {
     const accounts = await this.accountsRepository.getAccounts();
 
     return accounts;
   }
 
-  async getAccount(accountId: number) {
+  async getAccount(accountId: number): Promise<Account> {
     const account = await this.accountsRepository.getAccount(accountId);
     if (!account) {
       throw AccountException.AccountNotFound();
@@ -46,7 +47,7 @@ export class AccountsService {
     return account;
   }
 
-  async getAccountByEmail(email: string) {
+  async getAccountByEmail(email: string): Promise<Account> {
     const account = await this.accountsRepository.getAccountByEmail(email);
     if (!account) {
       throw AccountException.AccountNotFound();
@@ -55,7 +56,10 @@ export class AccountsService {
     return account;
   }
 
-  async updateProfile(accountId: number, profile: UpdateProfileDto) {
+  async updateProfile(
+    accountId: number,
+    profile: UpdateProfileDto,
+  ): Promise<Account> {
     const account = await this.accountsRepository.updateProfile(
       accountId,
       profile,
@@ -63,9 +67,11 @@ export class AccountsService {
     if (!account) {
       throw AccountException.AccountNotFound();
     }
+
+    return account;
   }
 
-  async deleteAccount(accountId: number) {
+  async deleteAccount(accountId: number): Promise<void> {
     await this.accountsRepository.deleteAccount(accountId);
   }
 }

@@ -8,7 +8,6 @@ import { Account } from './entities/account.entity';
 import { Profile } from './entities/profile.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { AccountDto } from './dto/account.dto';
 
 @Injectable()
 export class AccountsRepository {
@@ -21,7 +20,7 @@ export class AccountsRepository {
     private readonly cacheManager: Cache,
   ) {}
 
-  async createAccount(data: CreateAccountDto) {
+  async createAccount(data: CreateAccountDto): Promise<Account> {
     const profile = this.profileModel.create({
       ...data,
     });
@@ -29,34 +28,32 @@ export class AccountsRepository {
       ...data,
       profile: profile,
     });
-    const accountDto = await this.accountModel
-      .save(account)
-      .then((account) => new AccountDto(account));
+    await this.accountModel.save(account);
 
     await Promise.all([
-      this.cacheManager.set(`accounts:${account.id}`, accountDto),
-      this.cacheManager.set(`accounts:${account.email}`, accountDto),
+      this.cacheManager.set(`accounts:${account.id}`, account),
+      this.cacheManager.set(`accounts:${account.email}`, account),
     ]);
 
-    return accountDto;
+    return account;
   }
 
-  async getAccounts() {
-    const cachedAccounts = await this.cacheManager.get('accounts');
+  async getAccounts(): Promise<Account[]> {
+    const cachedAccounts = await this.cacheManager.get<Account[]>('accounts');
     if (cachedAccounts) {
       return cachedAccounts;
     }
 
-    const result = await this.accountModel.find();
-    const accounts = result.map((account) => new AccountDto(account));
-
+    const accounts = await this.accountModel.find();
     await this.cacheManager.set('accounts', accounts);
 
     return accounts;
   }
 
-  async getAccount(accountId: number) {
-    const cachedAccount = await this.cacheManager.get(`accounts:${accountId}`);
+  async getAccount(accountId: number): Promise<Account> | null {
+    const cachedAccount = await this.cacheManager.get<Account>(
+      `accounts:${accountId}`,
+    );
     if (cachedAccount) {
       return cachedAccount;
     }
@@ -65,15 +62,15 @@ export class AccountsRepository {
     if (!account) {
       return null;
     }
+    await this.cacheManager.set(`accounts:${accountId}`, account);
 
-    const accountDto = new AccountDto(account);
-    await this.cacheManager.set(`accounts:${accountId}`, accountDto);
-
-    return accountDto;
+    return account;
   }
 
-  async getAccountByEmail(email: string) {
-    const cachedAccount = await this.cacheManager.get(`accounts:${email}`);
+  async getAccountByEmail(email: string): Promise<Account> | null {
+    const cachedAccount = await this.cacheManager.get<Account>(
+      `accounts:${email}`,
+    );
     if (cachedAccount) {
       return cachedAccount;
     }
@@ -82,25 +79,31 @@ export class AccountsRepository {
     if (!account) {
       return null;
     }
+    await this.cacheManager.set(`accounts:${email}`, account);
 
-    const accountDto = new AccountDto(account);
-    await this.cacheManager.set(`accounts:${email}`, accountDto);
-
-    return accountDto;
+    return account;
   }
 
-  async updateProfile(accountId: number, profile: UpdateProfileDto) {
+  async updateProfile(
+    accountId: number,
+    profile: UpdateProfileDto,
+  ): Promise<Account> | null {
     const account = await this.accountModel.findOneBy({ id: accountId });
     if (!account) {
       return null;
     }
 
     Object.assign(account, { profile });
-    await account.save();
-    await this.cacheManager.del(`accounts:${accountId}`);
+
+    await Promise.all([
+      account.save(),
+      this.cacheManager.del(`accounts:${accountId}`),
+    ]);
+
+    return account;
   }
 
-  async deleteAccount(accountId: number) {
+  async deleteAccount(accountId: number): Promise<void> {
     await this.accountModel.softDelete({ id: accountId });
     await this.cacheManager.del(`accounts:${accountId}`);
   }
