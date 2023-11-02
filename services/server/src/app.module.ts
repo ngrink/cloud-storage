@@ -14,6 +14,7 @@ import { ConfigOptions } from './config/dotenv.config';
 import { TypeOrmOptions } from './config/typeorm.config';
 import { CacheOptions } from './config/cache.config';
 
+import { TokensModule } from '@/shared/modules/tokens';
 import { AccountsModule } from '@/modules/accounts';
 
 @Module({
@@ -21,6 +22,7 @@ import { AccountsModule } from '@/modules/accounts';
     ConfigModule.forRoot(ConfigOptions),
     TypeOrmModule.forRootAsync(TypeOrmOptions),
     CacheModule.registerAsync(CacheOptions),
+    TokensModule,
     AccountsModule,
   ],
   providers: [
