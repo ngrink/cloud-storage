@@ -18,7 +18,7 @@ import {
 } from 'class-validator';
 import { Exclude } from 'class-transformer';
 
-import { Session } from '@/modules/auth';
+import { Session } from '@/shared/modules/auth';
 import { Role } from '../../auth/enums/role.enum';
 import { Profile } from './profile.entity';
 

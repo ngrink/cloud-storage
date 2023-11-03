@@ -15,8 +15,8 @@ import { TypeOrmOptions } from './config/typeorm.config';
 import { CacheOptions } from './config/cache.config';
 
 import { TokensModule } from '@/shared/modules/tokens';
-import { AccountsModule } from '@/modules/accounts';
-import { AuthModule, AuthGuard, RolesGuard } from '@/modules/auth';
+import { AccountsModule } from '@/shared/modules/accounts';
+import { AuthModule, AuthGuard, RolesGuard } from '@/shared/modules/auth';
 
 @Module({
   imports: [

@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import { TokensService } from '@/shared/modules/tokens';
-import { AccountsService, Account } from '@/modules/accounts';
+import { AccountsService, Account } from '@/shared/modules/accounts';
 
 import { AuthException } from './auth.exception';
 import { SessionsRepository } from './repositories/session.repository';

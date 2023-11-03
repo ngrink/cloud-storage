@@ -1,4 +1,4 @@
-import { Account } from '@/modules/accounts';
+import { Account } from '@/shared/modules/accounts';
 import { IntersectionType } from '@nestjs/swagger';
 import { RequestDto } from './request.dto';
 

@@ -1,8 +1,8 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
-import { Session } from '@/modules/auth';
-import { Account, Profile } from '@/modules/accounts';
+import { Session } from '@/shared/modules/auth';
+import { Account, Profile } from '@/shared/modules/accounts';
 
 export const TypeOrmOptions: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule],

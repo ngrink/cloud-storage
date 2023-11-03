@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { IsIP, IsJWT, IsNumber, IsString } from 'class-validator';
-import { Account } from '@/modules/accounts';
+import { Account } from '@/shared/modules/accounts';
 
 @Entity('sessions')
 export class Session extends BaseEntity {

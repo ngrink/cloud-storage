@@ -1,6 +1,6 @@
 import { PickType, IntersectionType } from '@nestjs/swagger';
 
-import { Account } from '@/modules/accounts';
+import { Account } from '@/shared/modules/accounts';
 import { Session } from '../entities';
 import { RequestDto } from './request.dto';
 
