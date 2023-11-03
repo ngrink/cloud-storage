@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -18,7 +19,7 @@ import {
 import { Exclude } from 'class-transformer';
 
 import { Session } from '@/modules/auth';
-import { Role } from '../../auth/enums/roles.enum';
+import { Role } from '../../auth/enums/role.enum';
 import { Profile } from './profile.entity';
 
 @Entity('accounts')
@@ -58,4 +59,7 @@ export class Account extends BaseEntity {
     eager: true,
   })
   profile: Profile;
+
+  @OneToMany(() => Session, (session) => session.account)
+  sessions: Session[];
 }

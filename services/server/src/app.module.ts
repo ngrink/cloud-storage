@@ -4,7 +4,7 @@ import {
   Module,
   NestModule,
 } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -16,6 +16,7 @@ import { CacheOptions } from './config/cache.config';
 
 import { TokensModule } from '@/shared/modules/tokens';
 import { AccountsModule } from '@/modules/accounts';
+import { AuthModule, AuthGuard, RolesGuard } from '@/modules/auth';
 
 @Module({
   imports: [
@@ -24,11 +25,20 @@ import { AccountsModule } from '@/modules/accounts';
     CacheModule.registerAsync(CacheOptions),
     TokensModule,
     AccountsModule,
+    AuthModule,
   ],
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })
