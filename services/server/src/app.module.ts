@@ -1,5 +1,6 @@
 import {
   ClassSerializerInterceptor,
+  Global,
   MiddlewareConsumer,
   Module,
   NestModule,
@@ -8,24 +9,30 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
+import { MulterModule } from '@nestjs/platform-express';
 
 import { LoggerMiddleware } from './shared/middlewares/logger.middleware';
 import { ConfigOptions } from './config/dotenv.config';
 import { TypeOrmOptions } from './config/typeorm.config';
 import { CacheOptions } from './config/cache.config';
+import { MulterOptions } from './config/multer.config';
 
 import { TokensModule } from '@/shared/modules/tokens';
 import { AccountsModule } from '@/shared/modules/accounts';
 import { AuthModule, AuthGuard, RolesGuard } from '@/shared/modules/auth';
+import { StorageModule } from '@/shared/modules/storage';
 
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot(ConfigOptions),
     TypeOrmModule.forRootAsync(TypeOrmOptions),
     CacheModule.registerAsync(CacheOptions),
+    MulterModule.registerAsync(MulterOptions),
     TokensModule,
     AccountsModule,
     AuthModule,
+    StorageModule,
   ],
   providers: [
     {
@@ -41,6 +48,7 @@ import { AuthModule, AuthGuard, RolesGuard } from '@/shared/modules/auth';
       useClass: RolesGuard,
     },
   ],
+  exports: [MulterModule],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
