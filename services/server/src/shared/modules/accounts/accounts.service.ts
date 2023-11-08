@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 
 import { AccountsRepository } from './accounts.repository';
@@ -9,7 +10,10 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class AccountsService {
-  constructor(private readonly accountsRepository: AccountsRepository) {}
+  constructor(
+    private readonly accountsRepository: AccountsRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async createAccount(data: CreateAccountDto): Promise<Account> {
     const candidate = await this.accountsRepository.getAccountByEmail(
@@ -29,6 +33,7 @@ export class AccountsService {
       password: hashedPassword,
     });
 
+    this.eventEmitter.emit('account.created', account);
     return account;
   }
 

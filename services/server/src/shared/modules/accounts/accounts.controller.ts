@@ -12,11 +12,15 @@ import { ApiTags } from '@nestjs/swagger';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { WorkspacesService } from '@/modules/workspaces';
 
 @ApiTags('accounts')
 @Controller('accounts')
 export class AccountsController {
-  constructor(private readonly accountsService: AccountsService) {}
+  constructor(
+    private readonly accountsService: AccountsService,
+    private readonly workspacesService: WorkspacesService,
+  ) {}
 
   /*
     Create account
@@ -62,5 +66,10 @@ export class AccountsController {
   @Delete(':id')
   async deleteAccount(@Param('id') accountId: number) {
     return await this.accountsService.deleteAccount(accountId);
+  }
+
+  @Get(':id/workspaces')
+  async getAccountWorkspaces(@Param('id') accountId: number) {
+    return await this.workspacesService.getAccountWorkspaces(accountId);
   }
 }
