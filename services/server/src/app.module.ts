@@ -23,6 +23,7 @@ import { TokensModule } from '@/shared/modules/tokens';
 import { AccountsModule } from '@/shared/modules/accounts';
 import { AuthModule, AuthGuard, RolesGuard } from '@/shared/modules/auth';
 import { StorageModule } from '@/shared/modules/storage';
+import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 
 @Global()
 @Module({
@@ -36,6 +37,7 @@ import { StorageModule } from '@/shared/modules/storage';
     AccountsModule,
     AuthModule,
     StorageModule,
+    WorkspacesModule,
   ],
   providers: [
     {

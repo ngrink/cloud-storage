@@ -19,7 +19,9 @@ import {
 import { Exclude } from 'class-transformer';
 
 import { Session } from '@/shared/modules/auth';
-import { Role } from '../../auth/enums/role.enum';
+import { Role } from '@/shared/modules/auth/enums';
+import { Workspace } from '@/modules/workspaces';
+
 import { Profile } from './profile.entity';
 
 @Entity('accounts')
@@ -62,4 +64,7 @@ export class Account extends BaseEntity {
 
   @OneToMany(() => Session, (session) => session.account)
   sessions: Session[];
+
+  @OneToMany(() => Workspace, (workspace) => workspace.account)
+  workspaces: Workspace[];
 }
