@@ -6,10 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { Authenticated, User } from '@/shared/modules/auth/decorators/';
+import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators/';
+import { Role } from '@/shared/modules/auth/enums';
+import { FoldersService } from '@/modules/folders';
+import { FilesService } from '@/modules/files';
 
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
@@ -18,7 +22,11 @@ import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 @ApiTags('workspaces')
 @Controller('workspaces')
 export class WorkspacesController {
-  constructor(private readonly workspacesService: WorkspacesService) {}
+  constructor(
+    private readonly workspacesService: WorkspacesService,
+    private readonly foldersService: FoldersService,
+    private readonly filesService: FilesService,
+  ) {}
 
   /*
     Create workspace
@@ -40,6 +48,7 @@ export class WorkspacesController {
   */
   @Get()
   @Authenticated()
+  @Roles(Role.ADMIN)
   getAll() {
     return this.workspacesService.getAllWorkspaces();
   }
@@ -49,6 +58,7 @@ export class WorkspacesController {
   */
   @Get(':id')
   @Authenticated()
+  @Roles(Role.ADMIN)
   get(@Param('id') workspaceId: number) {
     return this.workspacesService.getWorkspace(workspaceId);
   }
@@ -75,5 +85,29 @@ export class WorkspacesController {
   @Authenticated()
   remove(@Param('id') workspaceId: number) {
     return this.workspacesService.removeWorkspace(workspaceId);
+  }
+
+  /*
+    Get workspace folders
+  */
+  @Get(':id/folders')
+  @Authenticated()
+  getWorkspaceFolders(
+    @Param('id') workspaceId: number,
+    @Query('parentId') parentId: number,
+  ) {
+    return this.foldersService.getWorkspaceFolders(workspaceId, parentId);
+  }
+
+  /*
+    Get workspace files
+  */
+  @Get(':id/files')
+  @Authenticated()
+  getWorkspaceFiles(
+    @Param('id') workspaceId: number,
+    @Query('parentId') parentId: number,
+  ) {
+    return this.filesService.getWorkspaceFiles(workspaceId, parentId);
   }
 }

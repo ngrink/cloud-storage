@@ -1,21 +1,19 @@
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { Account } from '@/shared/modules/accounts';
-import { Folder } from '@/modules/folders';
-import { File } from '@/modules/files';
+import { Workspace } from '@/modules/workspaces';
 
-@Entity('workspaces')
-export class Workspace {
+@Entity('folders')
+export class Folder {
   @PrimaryGeneratedColumn()
   @IsNumber()
   id: number;
@@ -25,8 +23,25 @@ export class Workspace {
   accountId: number;
 
   @Column()
+  @IsNumber()
+  workspaceId: number;
+
+  @Column({ nullable: true })
+  @IsNumber()
+  @IsOptional()
+  parentId?: number = null;
+
+  @Column()
   @IsString()
   name: string;
+
+  @Column({ default: 0 })
+  @IsNumber()
+  size: number = 0;
+
+  // @Column()
+  // @IsString()
+  // location: string;
 
   @CreateDateColumn()
   @IsDate()
@@ -46,9 +61,9 @@ export class Workspace {
   })
   account: Account;
 
-  @OneToMany(() => Folder, (folder) => folder.workspace)
-  folders: Folder[];
-
-  @OneToMany(() => File, (file) => file.workspace)
-  files: File[];
+  @ManyToOne(() => Workspace, (workspace) => workspace.folders, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  workspace: Workspace;
 }
