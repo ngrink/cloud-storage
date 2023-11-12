@@ -25,6 +25,7 @@ import { TokensModule } from '@/shared/modules/tokens';
 import { AccountsModule } from '@/shared/modules/accounts';
 import { AuthModule, AuthGuard, RolesGuard } from '@/shared/modules/auth';
 import { StorageModule } from '@/shared/modules/storage';
+import { MailModule } from '@/shared/modules/mail';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 import { FoldersModule } from '@/modules/folders';
 import { FilesModule } from '@/modules/files';
@@ -42,6 +43,7 @@ import { FilesModule } from '@/modules/files';
     AccountsModule,
     AuthModule,
     StorageModule,
+    MailModule,
     WorkspacesModule,
     FoldersModule,
     FilesModule,
