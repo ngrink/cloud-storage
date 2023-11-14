@@ -1,3 +1,4 @@
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
@@ -101,6 +102,45 @@ export class AccountsService {
     Promise.all([await tokenDB.save(), await account.save()]);
 
     return 'OK';
+  }
+
+  async requestResetPassword(email: string): Promise<string> {
+    const account = await this.accountsRepository.getAccountByEmail(email);
+    if (!account) {
+      return;
+    }
+
+    const token = `${uuid.v4()}`;
+    const link = urlcat(
+      this.configService.get('WEB_URL'),
+      'accounts/password/reset',
+      { token },
+    );
+
+    await this.accountsRepository.createPasswordReset(account.id, token);
+    await this.mailService.sendPasswordResetMail(account, link);
+  }
+
+  async resetPassword(data: ResetPasswordDto): Promise<void> {
+    const passwordReset = await this.accountsRepository.getPasswordReset(
+      data.token,
+    );
+    if (!passwordReset) {
+      throw AccountException.PasswordResetTokenNotFound();
+    }
+    if (Date.now() - passwordReset.createdAt > 1000 * 60 * 60 * 6) {
+      throw AccountException.PasswordResetTokenExpired();
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    await Promise.all([
+      await this.accountsRepository.updatePassword(
+        passwordReset.accountId,
+        hashedPassword,
+      ),
+      await passwordReset.remove(),
+    ]);
   }
 
   @OnEvent('account.created')

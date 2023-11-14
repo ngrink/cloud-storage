@@ -2,7 +2,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
 import { Session } from '@/shared/modules/auth';
-import { Account, Profile, VerificationToken } from '@/shared/modules/accounts';
+import {
+  Account,
+  Profile,
+  VerificationToken,
+  PasswordReset,
+} from '@/shared/modules/accounts';
 import { Workspace } from '@/modules/workspaces';
 import { Folder } from '@/modules/folders';
 import { File } from '@/modules/files';
@@ -23,6 +28,7 @@ export const TypeOrmOptions: TypeOrmModuleAsyncOptions = {
       Account,
       Profile,
       VerificationToken,
+      PasswordReset,
       Session,
       Workspace,
       Folder,

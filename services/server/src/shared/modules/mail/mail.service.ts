@@ -30,6 +30,12 @@ export class MailService {
       },
     });
   }
+
+  async sendPasswordResetMail(account: Account, link: string) {
+    await this.sendMail({
+      to: account.email,
+      subject: `Сброс пароля ${account.email} на ${this.host}`,
+      template: './password-reset-request',
       context: {
         account,
         link,

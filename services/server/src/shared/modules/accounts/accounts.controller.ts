@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -17,6 +18,7 @@ import { Role } from '@/shared/modules/auth/enums';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('accounts')
 @Controller('accounts')
@@ -81,9 +83,30 @@ export class AccountsController {
   /*
     Verify account email
   */
+  @HttpCode(200)
   @Post('/email/verify')
   async verifyEmail(@Query('token') token: string) {
     return await this.accountsService.verifyEmail(token);
+  }
+
+  /*
+    Request password reset
+  */
+  @HttpCode(200)
+  @Post('/password/reset')
+  async requestPasswordReset(@Body('email') email: string) {
+    await this.accountsService.requestResetPassword(email);
+    return 'OK';
+  }
+
+  /*
+    Reset password
+  */
+  @HttpCode(200)
+  @Post('/password/reset/confirm')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    await this.accountsService.resetPassword(resetPasswordDto);
+    return 'OK';
   }
 
   /*

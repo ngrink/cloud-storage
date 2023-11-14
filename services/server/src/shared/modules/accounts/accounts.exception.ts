@@ -16,4 +16,12 @@ export class AccountException {
   static VerificationTokenNotFound() {
     return new NotFoundException('Verification token not found');
   }
+
+  static PasswordResetTokenNotFound() {
+    return new NotFoundException('Password reset token not found');
+  }
+
+  static PasswordResetTokenExpired() {
+    return new BadRequestException('Password reset token expired');
+  }
 }

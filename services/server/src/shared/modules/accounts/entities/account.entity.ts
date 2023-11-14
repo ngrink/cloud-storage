@@ -23,6 +23,7 @@ import { Role } from '@/shared/modules/auth/enums';
 import { Workspace } from '@/modules/workspaces';
 
 import { Profile } from './profile.entity';
+import { PasswordReset } from './password-reset.entity';
 
 @Entity('accounts')
 export class Account extends BaseEntity {
@@ -67,4 +68,7 @@ export class Account extends BaseEntity {
 
   @OneToMany(() => Workspace, (workspace) => workspace.account)
   workspaces: Workspace[];
+
+  @OneToMany(() => PasswordReset, (password_reset) => password_reset.account)
+  password_resets: PasswordReset[];
 }
