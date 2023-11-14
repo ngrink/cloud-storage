@@ -6,6 +6,7 @@ import { Cache } from 'cache-manager';
 
 import { Account } from './entities/account.entity';
 import { Profile } from './entities/profile.entity';
+import { VerificationToken } from './entities/verification_token.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -16,6 +17,8 @@ export class AccountsRepository {
     private readonly accountModel: Repository<Account>,
     @InjectRepository(Profile)
     private readonly profileModel: Repository<Profile>,
+    @InjectRepository(VerificationToken)
+    private readonly verificationTokenModel: Repository<VerificationToken>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -106,5 +109,27 @@ export class AccountsRepository {
   async deleteAccount(accountId: number): Promise<void> {
     await this.accountModel.softDelete({ id: accountId });
     await this.cacheManager.del(`accounts:${accountId}`);
+  }
+
+  async createVerificationToken(accountId: number, token: string) {
+    const verificationToken = await this.verificationTokenModel.create({
+      accountId,
+      token,
+    });
+
+    await this.verificationTokenModel.save(verificationToken);
+
+    return verificationToken;
+  }
+
+  async getVerificationToken(token: string) {
+    const verificationToken = await this.verificationTokenModel.findOneBy({
+      token,
+    });
+    if (!verificationToken) {
+      return null;
+    }
+
+    return verificationToken;
   }
 }

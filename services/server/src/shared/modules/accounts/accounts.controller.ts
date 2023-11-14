@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -77,6 +78,17 @@ export class AccountsController {
     return await this.accountsService.deleteAccount(accountId);
   }
 
+  /*
+    Verify account email
+  */
+  @Post('/email/verify')
+  async verifyEmail(@Query('token') token: string) {
+    return await this.accountsService.verifyEmail(token);
+  }
+
+  /*
+    Get account workspaces
+  */
   @Get(':id/workspaces')
   @Authenticated()
   async getAccountWorkspaces(@Param('id') accountId: number) {

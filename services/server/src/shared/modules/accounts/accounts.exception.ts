@@ -12,4 +12,8 @@ export class AccountException {
   static PasswordsNotMatch() {
     return new BadRequestException('Passwords do not match');
   }
+
+  static VerificationTokenNotFound() {
+    return new NotFoundException('Verification token not found');
+  }
 }

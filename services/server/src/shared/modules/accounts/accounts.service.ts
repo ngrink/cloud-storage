@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ConfigService } from '@nestjs/config';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
+import * as uuid from 'uuid';
+import urlcat from 'urlcat';
+
+import { MailService } from '@/shared/modules/mail';
 
 import { AccountsRepository } from './accounts.repository';
 import { AccountException } from './accounts.exception';
@@ -12,7 +17,9 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 export class AccountsService {
   constructor(
     private readonly accountsRepository: AccountsRepository,
+    private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly mailService: MailService,
   ) {}
 
   async createAccount(data: CreateAccountDto): Promise<Account> {
@@ -78,5 +85,40 @@ export class AccountsService {
 
   async deleteAccount(accountId: number): Promise<void> {
     await this.accountsRepository.deleteAccount(accountId);
+  }
+
+  async verifyEmail(token: string): Promise<string> {
+    const tokenDB = await this.accountsRepository.getVerificationToken(token);
+    if (!tokenDB) {
+      throw AccountException.VerificationTokenNotFound();
+    }
+
+    tokenDB.verifiedAt = new Date();
+
+    const account = await this.accountsRepository.getAccount(tokenDB.accountId);
+    account.isVerified = true;
+
+    Promise.all([await tokenDB.save(), await account.save()]);
+
+    return 'OK';
+  }
+
+  @OnEvent('account.created')
+  async createAndSendVerificationToken(account: Account) {
+    const { token } = await this.accountsRepository.createVerificationToken(
+      account.id,
+      uuid.v4(),
+    );
+
+    const verificationLink = urlcat(
+      this.configService.get('API_URL'),
+      '/accounts/email/verify',
+      {
+        token,
+        _method: 'POST',
+      },
+    );
+
+    await this.mailService.sendEmailVerificationMail(account, verificationLink);
   }
 }

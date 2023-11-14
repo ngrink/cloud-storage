@@ -2,7 +2,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
 import { Session } from '@/shared/modules/auth';
-import { Account, Profile } from '@/shared/modules/accounts';
+import { Account, Profile, VerificationToken } from '@/shared/modules/accounts';
 import { Workspace } from '@/modules/workspaces';
 import { Folder } from '@/modules/folders';
 import { File } from '@/modules/files';
@@ -19,7 +19,15 @@ export const TypeOrmOptions: TypeOrmModuleAsyncOptions = {
     database: configService.get('POSTGRES_DATABASE'),
     synchronize: configService.get('NODE_ENV') === 'development',
     logging: false,
-    entities: [Account, Profile, Session, Workspace, Folder, File],
+    entities: [
+      Account,
+      Profile,
+      VerificationToken,
+      Session,
+      Workspace,
+      Folder,
+      File,
+    ],
     subscribers: [],
     migrations: [],
   }),
