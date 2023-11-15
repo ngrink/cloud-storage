@@ -13,6 +13,7 @@ import { AccountException } from './accounts.exception';
 import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class AccountsService {
@@ -82,6 +83,29 @@ export class AccountsService {
     }
 
     return account;
+  }
+
+  async updatePassword(data: UpdatePasswordDto): Promise<Account> {
+    const account = await this.accountsRepository.getAccount(data.accountId);
+    if (!account) {
+      throw AccountException.AccountNotFound();
+    }
+
+    const isMatch = await bcrypt.compare(
+      data.currentPassword,
+      account.password,
+    );
+    if (!isMatch) {
+      throw AccountException.PasswordsNotMatch();
+    }
+
+    const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+    const updatedAccount = await this.accountsRepository.updatePassword(
+      account.id,
+      hashedPassword,
+    );
+
+    return updatedAccount;
   }
 
   async deleteAccount(accountId: number): Promise<void> {

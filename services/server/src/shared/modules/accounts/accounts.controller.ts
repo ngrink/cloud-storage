@@ -12,13 +12,15 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { WorkspacesService } from '@/modules/workspaces';
-import { Authenticated, Roles } from '@/shared/modules/auth/decorators';
+import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators';
 import { Role } from '@/shared/modules/auth/enums';
+import { AccessTokenDto } from '@/shared/modules/auth';
 
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdatePasswordBodyDto } from './dto/update-password.dto';
 
 @ApiTags('accounts')
 @Controller('accounts')
@@ -87,6 +89,21 @@ export class AccountsController {
   @Post('/email/verify')
   async verifyEmail(@Query('token') token: string) {
     return await this.accountsService.verifyEmail(token);
+  }
+  /*
+    Update password
+  */
+  @HttpCode(200)
+  @Patch('/password')
+  @Authenticated()
+  async updatePassword(
+    @User('id') accountId: number,
+    @Body() updatePasswordBodyDto: UpdatePasswordBodyDto,
+  ) {
+    await this.accountsService.updatePassword({
+      accountId,
+      ...updatePasswordBodyDto,
+    });
   }
 
   /*

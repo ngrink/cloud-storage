@@ -128,6 +128,8 @@ export class AccountsRepository {
       await this.cacheManager.del(`accounts:${account.email}`),
     ]);
 
+    return account;
+  }
     return;
   }
 
