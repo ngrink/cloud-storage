@@ -100,7 +100,7 @@ export class AccountsController {
     @User('id') accountId: number,
     @Body('email') email: string,
   ) {
-    return await this.accountsService.updateEmailRequest(accountId, email);
+    await this.accountsService.updateEmailRequest(accountId, email);
   }
 
   /*
@@ -109,7 +109,7 @@ export class AccountsController {
   @HttpCode(200)
   @Patch('/email/confirm')
   async updateEmailConfirm(@Query('token') token: string) {
-    return await this.accountsService.updateEmailConfirm(token);
+    await this.accountsService.updateEmailConfirm(token);
   }
 
   /*
