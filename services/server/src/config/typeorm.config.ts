@@ -7,6 +7,7 @@ import {
   Profile,
   VerificationToken,
   PasswordReset,
+  EmailUpdate,
 } from '@/shared/modules/accounts';
 import { Workspace } from '@/modules/workspaces';
 import { Folder } from '@/modules/folders';
@@ -29,6 +30,7 @@ export const TypeOrmOptions: TypeOrmModuleAsyncOptions = {
       Profile,
       VerificationToken,
       PasswordReset,
+      EmailUpdate,
       Session,
       Workspace,
       Folder,

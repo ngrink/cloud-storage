@@ -10,6 +10,7 @@ import { VerificationToken } from './entities/verification_token.entity';
 import { PasswordReset } from './entities/password-reset.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { EmailUpdate } from './entities/email-update.entity';
 
 @Injectable()
 export class AccountsRepository {
@@ -22,6 +23,8 @@ export class AccountsRepository {
     private readonly verificationTokenModel: Repository<VerificationToken>,
     @InjectRepository(PasswordReset)
     private readonly passwordResetModel: Repository<PasswordReset>,
+    @InjectRepository(EmailUpdate)
+    private readonly emailUpdateModel: Repository<EmailUpdate>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -130,7 +133,24 @@ export class AccountsRepository {
 
     return account;
   }
-    return;
+
+  async updateEmail(accountId: number, email: string) {
+    const account = await this.accountModel.findOneBy({
+      id: accountId,
+    });
+    if (!account) {
+      return;
+    }
+
+    account.email = email;
+
+    await Promise.all([
+      await account.save(),
+      await this.cacheManager.del(`accounts:${accountId}`),
+      await this.cacheManager.del(`accounts:${account.email}`),
+    ]);
+
+    return account;
   }
 
   async deleteAccount(accountId: number): Promise<void> {
@@ -180,5 +200,25 @@ export class AccountsRepository {
     }
 
     return passwordReset;
+  }
+
+  async createEmailUpdate(accountId: number, email: string, token: string) {
+    const emailUpdate = this.emailUpdateModel.create({
+      accountId,
+      email,
+      token,
+    });
+    await this.emailUpdateModel.save(emailUpdate);
+
+    return emailUpdate;
+  }
+
+  async getEmailUpdate(token: string) {
+    const emailUpdate = this.emailUpdateModel.findOneBy({ token });
+    if (!emailUpdate) {
+      return null;
+    }
+
+    return emailUpdate;
   }
 }

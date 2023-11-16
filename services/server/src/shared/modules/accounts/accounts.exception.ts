@@ -24,4 +24,12 @@ export class AccountException {
   static PasswordResetTokenExpired() {
     return new BadRequestException('Password reset token expired');
   }
+
+  static EmailUpdateTokenNotFound() {
+    return new NotFoundException('Email update token not found');
+  }
+
+  static EmailUpdateTokenExpired() {
+    return new BadRequestException('Email update token expired');
+  }
 }

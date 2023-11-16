@@ -128,6 +128,49 @@ export class AccountsService {
     return 'OK';
   }
 
+  async updateEmailRequest(accountId: number, email: string) {
+    const account = await this.accountsRepository.getAccount(accountId);
+    if (!account) {
+      throw AccountException.AccountNotFound();
+    }
+
+    const candidate = await this.accountsRepository.getAccountByEmail(email);
+    if (candidate) {
+      throw AccountException.AccountEmailExists();
+    }
+
+    const token = uuid.v4();
+    const link = urlcat(
+      this.configService.get('API_URL'),
+      `/accounts/email/confirm`,
+      {
+        token,
+        _method: 'PATCH',
+      },
+    );
+
+    await this.accountsRepository.createEmailUpdate(accountId, email, token);
+    this.mailService.sendEmailUpdateMail(account.email, email, link);
+  }
+
+  async updateEmailConfirm(token: string) {
+    const updateEmail = await this.accountsRepository.getEmailUpdate(token);
+    if (!updateEmail) {
+      throw AccountException.EmailUpdateTokenNotFound();
+    }
+    const { accountId, email } = updateEmail;
+    const account = await this.accountsRepository.updateEmail(accountId, email);
+    updateEmail.remove();
+
+    return account;
+  }
+
+  async updateEmail(accountId: number, email: string): Promise<Account> {
+    const account = await this.accountsRepository.updateEmail(accountId, email);
+
+    return account;
+  }
+
   async requestResetPassword(email: string): Promise<string> {
     const account = await this.accountsRepository.getAccountByEmail(email);
     if (!account) {

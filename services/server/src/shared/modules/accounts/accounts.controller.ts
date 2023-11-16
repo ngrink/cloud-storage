@@ -14,7 +14,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { WorkspacesService } from '@/modules/workspaces';
 import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators';
 import { Role } from '@/shared/modules/auth/enums';
-import { AccessTokenDto } from '@/shared/modules/auth';
 
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -90,6 +89,29 @@ export class AccountsController {
   async verifyEmail(@Query('token') token: string) {
     return await this.accountsService.verifyEmail(token);
   }
+
+  /*
+    Update email request
+  */
+  @HttpCode(200)
+  @Patch('/email')
+  @Authenticated()
+  async updateEmailRequest(
+    @User('id') accountId: number,
+    @Body('email') email: string,
+  ) {
+    return await this.accountsService.updateEmailRequest(accountId, email);
+  }
+
+  /*
+    Update email confirm
+  */
+  @HttpCode(200)
+  @Patch('/email/confirm')
+  async updateEmailConfirm(@Query('token') token: string) {
+    return await this.accountsService.updateEmailConfirm(token);
+  }
+
   /*
     Update password
   */

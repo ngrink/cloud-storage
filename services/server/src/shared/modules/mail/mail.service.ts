@@ -42,4 +42,17 @@ export class MailService {
       },
     });
   }
+
+  async sendEmailUpdateMail(source: string, destination: string, link: string) {
+    await this.sendMail({
+      to: destination,
+      subject: `Подтвердите смену эл. почты на ${this.host}`,
+      template: './email-update',
+      context: {
+        source,
+        destination,
+        link,
+      },
+    });
+  }
 }
