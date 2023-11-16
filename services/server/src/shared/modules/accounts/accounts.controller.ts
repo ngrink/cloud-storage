@@ -6,16 +6,20 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { WorkspacesService } from '@/modules/workspaces';
-import { Authenticated, Roles } from '@/shared/modules/auth/decorators';
+import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators';
 import { Role } from '@/shared/modules/auth/enums';
 
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdatePasswordBodyDto } from './dto/update-password.dto';
 
 @ApiTags('accounts')
 @Controller('accounts')
@@ -77,6 +81,76 @@ export class AccountsController {
     return await this.accountsService.deleteAccount(accountId);
   }
 
+  /*
+    Verify account email
+  */
+  @HttpCode(200)
+  @Post('/email/verify')
+  async verifyEmail(@Query('token') token: string) {
+    return await this.accountsService.verifyEmail(token);
+  }
+
+  /*
+    Update email request
+  */
+  @HttpCode(200)
+  @Patch('/email')
+  @Authenticated()
+  async updateEmailRequest(
+    @User('id') accountId: number,
+    @Body('email') email: string,
+  ) {
+    return await this.accountsService.updateEmailRequest(accountId, email);
+  }
+
+  /*
+    Update email confirm
+  */
+  @HttpCode(200)
+  @Patch('/email/confirm')
+  async updateEmailConfirm(@Query('token') token: string) {
+    return await this.accountsService.updateEmailConfirm(token);
+  }
+
+  /*
+    Update password
+  */
+  @HttpCode(200)
+  @Patch('/password')
+  @Authenticated()
+  async updatePassword(
+    @User('id') accountId: number,
+    @Body() updatePasswordBodyDto: UpdatePasswordBodyDto,
+  ) {
+    await this.accountsService.updatePassword({
+      accountId,
+      ...updatePasswordBodyDto,
+    });
+  }
+
+  /*
+    Request password reset
+  */
+  @HttpCode(200)
+  @Post('/password/reset')
+  async requestPasswordReset(@Body('email') email: string) {
+    await this.accountsService.requestResetPassword(email);
+    return 'OK';
+  }
+
+  /*
+    Reset password
+  */
+  @HttpCode(200)
+  @Post('/password/reset/confirm')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    await this.accountsService.resetPassword(resetPasswordDto);
+    return 'OK';
+  }
+
+  /*
+    Get account workspaces
+  */
   @Get(':id/workspaces')
   @Authenticated()
   async getAccountWorkspaces(@Param('id') accountId: number) {

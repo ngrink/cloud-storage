@@ -13,7 +13,9 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
-import { LoggerMiddleware } from './shared/middlewares/logger.middleware';
+import { MethodOverrideMiddleware } from '@/shared/middlewares/method-override.middleware';
+import { LoggerMiddleware } from '@/shared/middlewares/logger.middleware';
+
 import { ConfigOptions } from './config/dotenv.config';
 import { TypeOrmOptions } from './config/typeorm.config';
 import { CacheOptions } from './config/cache.config';
@@ -25,6 +27,7 @@ import { TokensModule } from '@/shared/modules/tokens';
 import { AccountsModule } from '@/shared/modules/accounts';
 import { AuthModule, AuthGuard, RolesGuard } from '@/shared/modules/auth';
 import { StorageModule } from '@/shared/modules/storage';
+import { MailModule } from '@/shared/modules/mail';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 import { FoldersModule } from '@/modules/folders';
 import { FilesModule } from '@/modules/files';
@@ -42,6 +45,7 @@ import { FilesModule } from '@/modules/files';
     AccountsModule,
     AuthModule,
     StorageModule,
+    MailModule,
     WorkspacesModule,
     FoldersModule,
     FilesModule,
@@ -64,6 +68,7 @@ import { FilesModule } from '@/modules/files';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer.apply(MethodOverrideMiddleware).forRoutes('*');
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }
