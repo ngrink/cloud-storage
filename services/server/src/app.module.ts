@@ -26,6 +26,7 @@ import { EventEmitterOptions } from './config/event-emitter.config';
 import { TokensModule } from '@/shared/modules/tokens';
 import { AccountsModule } from '@/shared/modules/accounts';
 import { AuthModule, AuthGuard, RolesGuard } from '@/shared/modules/auth';
+import { TfaModule } from '@/shared/modules/tfa';
 import { StorageModule } from '@/shared/modules/storage';
 import { MailModule } from '@/shared/modules/mail';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
@@ -44,6 +45,7 @@ import { FilesModule } from '@/modules/files';
     TokensModule,
     AccountsModule,
     AuthModule,
+    TfaModule,
     StorageModule,
     MailModule,
     WorkspacesModule,

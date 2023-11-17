@@ -3,12 +3,13 @@ import * as bcrypt from 'bcrypt';
 
 import { TokensService } from '@/shared/modules/tokens';
 import { AccountsService, Account } from '@/shared/modules/accounts';
+import { TfaService } from '@/shared/modules/tfa';
 
 import { AuthException } from './auth.exception';
-import { SessionsRepository } from './repositories/session.repository';
+import { Session } from './entities';
+import { SessionsRepository } from './repositories';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { AccessTokenDto, RefreshTokenDto } from './dto/tokens.dto';
-import { Session } from './entities';
 import { RequestDto } from './dto/request.dto';
 
 @Injectable()
@@ -16,12 +17,13 @@ export class AuthService {
   constructor(
     private readonly accountsService: AccountsService,
     private readonly tokensService: TokensService,
+    private readonly tfaService: TfaService,
     private readonly sessionRepository: SessionsRepository,
   ) {}
 
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    const { login, password } = loginDto;
-    const account = await this.checkCredentials(login, password);
+    const { login, password, code } = loginDto;
+    const account = await this.checkCredentials(login, password, code);
     const tokens = this.generateTokens(account, loginDto);
     await this.sessionRepository.createSession(
       account,
@@ -68,6 +70,7 @@ export class AuthService {
   private async checkCredentials(
     login: string,
     password: string,
+    code: string,
   ): Promise<Account> {
     const account: Account = await this.accountsService
       .getAccountByEmail(login)
@@ -75,7 +78,6 @@ export class AuthService {
         if (error instanceof HttpException) return null;
         throw error;
       });
-
     if (!account) {
       throw AuthException.BadCredentials();
     }
@@ -83,6 +85,11 @@ export class AuthService {
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
       throw AuthException.BadCredentials();
+    }
+
+    const factor = await this.tfaService.getFactor(account.id);
+    if (factor) {
+      await this.tfaService.verifyFactor(factor, code);
     }
 
     return account;

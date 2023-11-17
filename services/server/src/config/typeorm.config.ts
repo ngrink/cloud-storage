@@ -2,6 +2,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 
 import { Session } from '@/shared/modules/auth';
+import { Factor } from '@/shared/modules/tfa';
 import {
   Account,
   Profile,
@@ -32,11 +33,13 @@ export const TypeOrmOptions: TypeOrmModuleAsyncOptions = {
       PasswordReset,
       EmailUpdate,
       Session,
+      Factor,
       Workspace,
       Folder,
       File,
     ],
     subscribers: [],
     migrations: [],
+    dropSchema: false,
   }),
 };
