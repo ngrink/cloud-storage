@@ -24,6 +24,7 @@ import { Workspace } from '@/modules/workspaces';
 
 import { Profile } from './profile.entity';
 import { PasswordReset } from './password-reset.entity';
+import { Factor } from '../../tfa';
 
 @Entity('accounts')
 export class Account extends BaseEntity {
@@ -71,4 +72,7 @@ export class Account extends BaseEntity {
 
   @OneToMany(() => PasswordReset, (password_reset) => password_reset.account)
   password_resets: PasswordReset[];
+
+  @OneToOne(() => Factor, (factor) => factor.account)
+  tfa: Factor;
 }

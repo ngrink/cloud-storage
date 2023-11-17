@@ -5,6 +5,7 @@ import { RequestDto } from './request.dto';
 export class LoginBodyDto {
   login: string;
   password: string;
+  code?: string;
 }
 
 export class LoginDto extends IntersectionType(LoginBodyDto, RequestDto) {}
