@@ -1,5 +1,5 @@
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
@@ -14,15 +14,17 @@ import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { OAuthProvider } from '../auth';
+import { AuthService, OAuthProvider } from '../auth';
 
 @Injectable()
 export class AccountsService {
   constructor(
-    private readonly accountsRepository: AccountsRepository,
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
     private readonly mailService: MailService,
+    private readonly accountsRepository: AccountsRepository,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
   ) {}
 
   async createAccount(data: CreateAccountDto): Promise<Account> {
@@ -168,7 +170,7 @@ export class AccountsService {
 
     const token = uuid.v4();
     const link = urlcat(
-      this.configService.get('API_URL'),
+      this.configService.get('SERVICE_API_URL'),
       `/accounts/email/confirm`,
       {
         token,
@@ -206,13 +208,14 @@ export class AccountsService {
 
     const token = `${uuid.v4()}`;
     const link = urlcat(
-      this.configService.get('WEB_URL'),
+      this.configService.get('SERVICE_API_URL'),
       'accounts/password/reset',
       { token },
     );
 
+    const loginLink = await this.authService.generateLoginLink(account.id);
     await this.accountsRepository.createPasswordReset(account.id, token);
-    await this.mailService.sendPasswordResetMail(account, link);
+    await this.mailService.sendPasswordResetMail(account, link, loginLink);
   }
 
   async resetPassword(data: ResetPasswordDto): Promise<void> {
@@ -245,7 +248,7 @@ export class AccountsService {
     );
 
     const verificationLink = urlcat(
-      this.configService.get('API_URL'),
+      this.configService.get('SERVICE_API_URL'),
       '/accounts/email/verify',
       {
         token,

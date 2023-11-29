@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -18,7 +19,6 @@ import { AuthService } from './auth.service';
 import { AccessTokenDto, ClientDto, LoginDto } from './dto';
 import { Authenticated, CurrentClient, CurrentUser } from './decorators';
 import { refreshCookieOptions } from './config';
-import { OAuthProvider } from './enums';
 import {
   GithubGuard,
   GoogleGuard,
@@ -49,22 +49,22 @@ export class AuthController {
     return { account, accessToken };
   }
 
-  // /*
-  //   Login by link
-  // */
-  // @HttpCode(HttpStatus.OK)
-  // @Post('login/link')
-  // async loginByLink(
-  //   @Query('token') token: string,
-  //   @CurrentClient() client: ClientDto,
-  //   @Res({ passthrough: true }) res: Response,
-  // ) {
-  //   const { account, accessToken, refreshToken } =
-  //     await this.authService.log(token, client);
+  /*
+    Login by link
+  */
+  @HttpCode(HttpStatus.OK)
+  @Post('login/link')
+  async loginByLink(
+    @Query('token') token: string,
+    @CurrentClient() client: ClientDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { account, accessToken, refreshToken } =
+      await this.authService.loginByLink(token, client);
 
-  //   res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-  //   return { account, accessToken };
-  // }
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+    return { account, accessToken };
+  }
 
   /*
     Logout

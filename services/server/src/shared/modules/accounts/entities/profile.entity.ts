@@ -6,7 +6,7 @@ import {
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { IsNumber, IsString, IsUrl } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
 
 import { Account } from './account.entity';
 
@@ -22,6 +22,7 @@ export class Profile extends BaseEntity {
 
   @Column({ nullable: true })
   @IsUrl()
+  @IsOptional()
   avatar?: string = null;
 
   @OneToOne(() => Account, (account) => account.profile, {

@@ -12,7 +12,7 @@ export class MailService {
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
   ) {
-    this.host = configService.get('HOST');
+    this.host = configService.get('SERVICE_HOST');
   }
 
   async sendMail(sendMailOptions: ISendMailOptions) {
@@ -31,7 +31,11 @@ export class MailService {
     });
   }
 
-  async sendPasswordResetMail(account: Account, link: string) {
+  async sendPasswordResetMail(
+    account: Account,
+    link: string,
+    loginLink: string,
+  ) {
     await this.sendMail({
       to: account.email,
       subject: `Сброс пароля ${account.email} на ${this.host}`,
@@ -39,6 +43,7 @@ export class MailService {
       context: {
         account,
         link,
+        loginLink,
       },
     });
   }
