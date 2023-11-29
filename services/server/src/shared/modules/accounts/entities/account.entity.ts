@@ -13,13 +13,16 @@ import {
   IsArray,
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsNumber,
+  IsOptional,
+  IsString,
   IsStrongPassword,
 } from 'class-validator';
 import { Exclude } from 'class-transformer';
 
 import { Session } from '@/shared/modules/auth';
-import { Role } from '@/shared/modules/auth/enums';
+import { Role, OAuthProvider } from '@/shared/modules/auth/enums';
 import { Workspace } from '@/modules/workspaces';
 
 import { Profile } from './profile.entity';
@@ -32,14 +35,16 @@ export class Account extends BaseEntity {
   @IsNumber()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   @IsEmail()
-  email: string;
+  @IsOptional()
+  email?: string = null;
 
-  @Column()
+  @Column({ nullable: true })
   @IsStrongPassword({ minLength: 12 })
+  @IsOptional()
   @Exclude({ toPlainOnly: true })
-  password: string;
+  password?: string;
 
   @Column()
   @IsBoolean()
@@ -48,6 +53,16 @@ export class Account extends BaseEntity {
   @Column('text', { array: true })
   @IsArray()
   roles: Role[] = [Role.USER];
+
+  @Column({ nullable: true })
+  @IsEnum(OAuthProvider)
+  @IsOptional()
+  provider: OAuthProvider = null;
+
+  @Column({ nullable: true })
+  @IsString()
+  @IsOptional()
+  providerSub: string = null;
 
   @CreateDateColumn()
   createdAt: Date;

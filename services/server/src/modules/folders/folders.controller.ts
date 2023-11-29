@@ -9,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators';
+import {
+  Authenticated,
+  Roles,
+  CurrentUser,
+} from '@/shared/modules/auth/decorators';
 import { Role } from '@/shared/modules/auth/enums';
 import { AccessTokenDto } from '@/shared/modules/auth';
 
@@ -27,7 +31,7 @@ export class FoldersController {
   @Post()
   @Authenticated()
   create(
-    @User() account: AccessTokenDto,
+    @CurrentUser() account: AccessTokenDto,
     @Body() createFolderBodyDto: CreateFolderBodyDto,
   ) {
     return this.foldersService.createFolder({

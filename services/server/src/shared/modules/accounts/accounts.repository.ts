@@ -1,3 +1,4 @@
+import { OAuthProvider } from '@/shared/modules/auth';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -89,6 +90,24 @@ export class AccountsRepository {
     if (!account) {
       return null;
     }
+    await this.cacheManager.set(`accounts:${account.id}`, account);
+    await this.cacheManager.set(`accounts:${account.email}`, account);
+
+    return account;
+  }
+
+  async getAccountByProvider(
+    provider: OAuthProvider,
+    providerSub: string,
+  ): Promise<Account> | null {
+    const account = await this.accountModel.findOneBy({
+      provider,
+      providerSub,
+    });
+    if (!account) {
+      return null;
+    }
+
     await this.cacheManager.set(`accounts:${account.id}`, account);
     await this.cacheManager.set(`accounts:${account.email}`, account);
 

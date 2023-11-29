@@ -10,7 +10,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators/';
+import {
+  Authenticated,
+  Roles,
+  CurrentUser,
+} from '@/shared/modules/auth/decorators/';
 import { Role } from '@/shared/modules/auth/enums';
 import { FoldersService } from '@/modules/folders';
 import { FilesService } from '@/modules/files';
@@ -34,7 +38,7 @@ export class WorkspacesController {
   @Post()
   @Authenticated()
   create(
-    @User('id') accountId: number,
+    @CurrentUser('id') accountId: number,
     @Body() createWorkspaceDto: CreateWorkspaceDto,
   ) {
     return this.workspacesService.createWorkspace(

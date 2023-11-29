@@ -7,7 +7,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsIP, IsJWT, IsNumber, IsString } from 'class-validator';
+import { IsIP, IsJWT, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Account } from '@/shared/modules/accounts';
 
 @Entity('sessions')
@@ -28,9 +28,10 @@ export class Session extends BaseEntity {
   @IsString()
   userAgent: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   @IsJWT()
-  refreshToken: string;
+  @IsOptional()
+  refreshToken?: string;
 
   @CreateDateColumn()
   createdAt: Date;
