@@ -1,10 +1,10 @@
-import { LoginDto } from '../dto/login.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Session } from '../entities/session.entity';
 import { Account } from '@/shared/modules/accounts';
+import { ClientDto } from '../dto';
 
 @Injectable()
 export class SessionsRepository {
@@ -15,10 +15,10 @@ export class SessionsRepository {
 
   async createSession(
     account: Account,
-    loginDto: LoginDto,
-    refreshToken: string,
+    client: ClientDto,
+    refreshToken?: string,
   ): Promise<Session> {
-    const sessionDB = await this.getSession(account.id, loginDto.clientId);
+    const sessionDB = await this.getSession(account.id, client.id);
     if (sessionDB) {
       sessionDB.refreshToken = refreshToken;
       await sessionDB.save();
@@ -29,9 +29,9 @@ export class SessionsRepository {
     const session = this.sessionModel.create({
       account: account,
       accountId: account.id,
-      clientId: loginDto.clientId,
-      userIP: loginDto.userIP,
-      userAgent: loginDto.userAgent,
+      clientId: client.id,
+      userIP: client.ip,
+      userAgent: client.useragent,
       refreshToken: refreshToken,
     });
     await this.sessionModel.save(session);

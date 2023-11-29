@@ -9,11 +9,12 @@ import urlcat from 'urlcat';
 import { MailService } from '@/shared/modules/mail';
 
 import { AccountsRepository } from './accounts.repository';
-import { AccountException } from './accounts.exception';
+import { AccountsException } from './accounts.exception';
 import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { OAuthProvider } from '../auth';
 
 @Injectable()
 export class AccountsService {
@@ -25,24 +26,35 @@ export class AccountsService {
   ) {}
 
   async createAccount(data: CreateAccountDto): Promise<Account> {
-    const candidate = await this.accountsRepository.getAccountByEmail(
-      data.email,
-    );
-    if (candidate) {
-      throw AccountException.AccountEmailExists();
+    if (data.email) {
+      const candidate = await this.accountsRepository.getAccountByEmail(
+        data.email,
+      );
+      if (candidate) {
+        throw AccountsException.AccountEmailExists();
+      }
     }
 
-    if (data.password !== data.passwordConfirm) {
-      throw AccountException.PasswordsNotMatch();
+    if (data.password && data.password !== data.passwordConfirm) {
+      throw AccountsException.PasswordsNotMatch();
     }
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = !data.provider
+      ? await bcrypt.hash(data.password, 10)
+      : null;
+
     const account = await this.accountsRepository.createAccount({
       ...data,
       password: hashedPassword,
     });
 
     this.eventEmitter.emit('account.created', account);
+    return account;
+  }
+
+  async createAccountByProvider(data: CreateAccountDto): Promise<Account> {
+    const account = await this.createAccount(data);
+
     return account;
   }
 
@@ -55,7 +67,7 @@ export class AccountsService {
   async getAccount(accountId: number): Promise<Account> {
     const account = await this.accountsRepository.getAccount(accountId);
     if (!account) {
-      throw AccountException.AccountNotFound();
+      throw AccountsException.AccountNotFound();
     }
 
     return account;
@@ -64,7 +76,22 @@ export class AccountsService {
   async getAccountByEmail(email: string): Promise<Account> {
     const account = await this.accountsRepository.getAccountByEmail(email);
     if (!account) {
-      throw AccountException.AccountNotFound();
+      throw AccountsException.AccountNotFound();
+    }
+
+    return account;
+  }
+
+  async getAccountByProvider(
+    provider: OAuthProvider,
+    providerSub: string,
+  ): Promise<Account> {
+    const account = await this.accountsRepository.getAccountByProvider(
+      provider,
+      providerSub,
+    );
+    if (!account) {
+      throw AccountsException.AccountNotFound();
     }
 
     return account;
@@ -79,7 +106,7 @@ export class AccountsService {
       profile,
     );
     if (!account) {
-      throw AccountException.AccountNotFound();
+      throw AccountsException.AccountNotFound();
     }
 
     return account;
@@ -88,7 +115,7 @@ export class AccountsService {
   async updatePassword(data: UpdatePasswordDto): Promise<Account> {
     const account = await this.accountsRepository.getAccount(data.accountId);
     if (!account) {
-      throw AccountException.AccountNotFound();
+      throw AccountsException.AccountNotFound();
     }
 
     const isMatch = await bcrypt.compare(
@@ -96,7 +123,7 @@ export class AccountsService {
       account.password,
     );
     if (!isMatch) {
-      throw AccountException.PasswordsNotMatch();
+      throw AccountsException.PasswordsNotMatch();
     }
 
     const hashedPassword = await bcrypt.hash(data.newPassword, 10);
@@ -115,7 +142,7 @@ export class AccountsService {
   async verifyEmail(token: string): Promise<string> {
     const tokenDB = await this.accountsRepository.getVerificationToken(token);
     if (!tokenDB) {
-      throw AccountException.VerificationTokenNotFound();
+      throw AccountsException.VerificationTokenNotFound();
     }
 
     tokenDB.verifiedAt = new Date();
@@ -131,12 +158,12 @@ export class AccountsService {
   async updateEmailRequest(accountId: number, email: string) {
     const account = await this.accountsRepository.getAccount(accountId);
     if (!account) {
-      throw AccountException.AccountNotFound();
+      throw AccountsException.AccountNotFound();
     }
 
     const candidate = await this.accountsRepository.getAccountByEmail(email);
     if (candidate) {
-      throw AccountException.AccountEmailExists();
+      throw AccountsException.AccountEmailExists();
     }
 
     const token = uuid.v4();
@@ -156,7 +183,7 @@ export class AccountsService {
   async updateEmailConfirm(token: string) {
     const updateEmail = await this.accountsRepository.getEmailUpdate(token);
     if (!updateEmail) {
-      throw AccountException.EmailUpdateTokenNotFound();
+      throw AccountsException.EmailUpdateTokenNotFound();
     }
     const { accountId, email } = updateEmail;
     const account = await this.accountsRepository.updateEmail(accountId, email);
@@ -193,10 +220,10 @@ export class AccountsService {
       data.token,
     );
     if (!passwordReset) {
-      throw AccountException.PasswordResetTokenNotFound();
+      throw AccountsException.PasswordResetTokenNotFound();
     }
     if (Date.now() - passwordReset.createdAt > 1000 * 60 * 60 * 6) {
-      throw AccountException.PasswordResetTokenExpired();
+      throw AccountsException.PasswordResetTokenExpired();
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);

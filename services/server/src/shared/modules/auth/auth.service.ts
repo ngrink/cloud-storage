@@ -10,7 +10,7 @@ import { Session } from './entities';
 import { SessionsRepository } from './repositories';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { AccessTokenDto, RefreshTokenDto } from './dto/tokens.dto';
-import { RequestDto } from './dto/request.dto';
+import { ClientDto } from './dto/client.dto';
 
 @Injectable()
 export class AuthService {
@@ -21,38 +21,59 @@ export class AuthService {
     private readonly sessionRepository: SessionsRepository,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    const { login, password, code } = loginDto;
-    const account = await this.checkCredentials(login, password, code);
-    const tokens = this.generateTokens(account, loginDto);
-    await this.sessionRepository.createSession(
-      account,
-      loginDto,
-      tokens.refreshToken,
-    );
+  async login(account: Account, client: ClientDto): Promise<LoginResponseDto> {
+    const session = await this.sessionRepository.createSession(account, client);
+    const tokens = this.generateTokens(account, session);
+
+    session.refreshToken = tokens.refreshToken;
+    await session.save();
 
     return { account, ...tokens };
   }
 
-  async logout(user: AccessTokenDto): Promise<void> {
-    await this.sessionRepository.deleteSession(user.id, user.clientId);
+  async loginByCredentials(
+    loginDto: LoginDto,
+    client: ClientDto,
+  ): Promise<LoginResponseDto> {
+    const { login, password, code } = loginDto;
+    const account = await this.checkCredentials(login, password, code);
+
+    return await this.login(account, client);
   }
 
-  async refresh(clientId: string, refreshToken: string): Promise<any> {
-    const payload = this.tokensService.verifyRefreshToken(
-      refreshToken,
-    ) as RefreshTokenDto;
+  // async loginByLink(
+  //   token: string,
+  //   client: ClientDto,
+  // ): Promise<LoginResponseDto> {
+  //   // get account by token
+  //   return await this.login(account, client);
+  // }
+
+  async loginByProvider(
+    account: Account,
+    client: ClientDto,
+  ): Promise<LoginResponseDto> {
+    return await this.login(account, client);
+  }
+
+  async logout(user: AccessTokenDto): Promise<void> {
+    await this.sessionRepository.deleteSession(user.id, user.clientId);
+    // TODO: invalidate tokens
+  }
+
+  async refresh(token: string, client: ClientDto): Promise<any> {
+    const payload = this.tokensService.verifyRefreshToken(token);
     if (!payload) {
       throw AuthException.Unauthorized();
     }
 
-    const isClientValid = this.checkClient({ clientId }, payload);
+    const isClientValid = this.checkClient(client, payload as RefreshTokenDto);
     if (!isClientValid) {
       throw AuthException.UnknownСlient();
     }
 
     const session =
-      await this.sessionRepository.getSessionByRefreshToken(refreshToken);
+      await this.sessionRepository.getSessionByRefreshToken(token);
     if (!session) {
       throw AuthException.Unauthorized();
     }
@@ -96,14 +117,13 @@ export class AuthService {
   }
 
   private checkClient(
-    request: Partial<RequestDto>,
+    client: Partial<ClientDto>,
     payload: AccessTokenDto | RefreshTokenDto,
   ): boolean {
-    const { clientId, userAgent, userIP } = request;
     if (
-      (clientId && clientId !== payload.clientId) ||
-      (userAgent && userAgent !== payload.userAgent) ||
-      (userIP && userIP !== payload.userIP)
+      (client.id && client.id !== payload.clientId) ||
+      (client.ip && client.ip !== payload.userIP) ||
+      (client.useragent && client.useragent !== payload.userAgent)
     ) {
       return false;
     }
@@ -111,7 +131,7 @@ export class AuthService {
     return true;
   }
 
-  private generateTokens(account: Account, session: Session | RequestDto) {
+  private generateTokens(account: Account, session: Session) {
     const accessToken = this.tokensService.generateAccessToken({
       ...new AccessTokenDto(account, session),
     });

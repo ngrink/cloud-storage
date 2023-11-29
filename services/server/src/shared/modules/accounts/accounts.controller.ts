@@ -12,7 +12,11 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { WorkspacesService } from '@/modules/workspaces';
-import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators';
+import {
+  Authenticated,
+  Roles,
+  CurrentUser,
+} from '@/shared/modules/auth/decorators';
 import { Role } from '@/shared/modules/auth/enums';
 
 import { AccountsService } from './accounts.service';
@@ -97,7 +101,7 @@ export class AccountsController {
   @Patch('/email')
   @Authenticated()
   async updateEmailRequest(
-    @User('id') accountId: number,
+    @CurrentUser('id') accountId: number,
     @Body('email') email: string,
   ) {
     await this.accountsService.updateEmailRequest(accountId, email);
@@ -119,7 +123,7 @@ export class AccountsController {
   @Patch('/password')
   @Authenticated()
   async updatePassword(
-    @User('id') accountId: number,
+    @CurrentUser('id') accountId: number,
     @Body() updatePasswordBodyDto: UpdatePasswordBodyDto,
   ) {
     await this.accountsService.updatePassword({

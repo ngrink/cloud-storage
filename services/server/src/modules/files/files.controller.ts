@@ -12,7 +12,11 @@ import {
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-import { Authenticated, Roles, User } from '@/shared/modules/auth/decorators';
+import {
+  Authenticated,
+  Roles,
+  CurrentUser,
+} from '@/shared/modules/auth/decorators';
 import { Role } from '@/shared/modules/auth/enums';
 
 import { FilesService } from './files.service';
@@ -30,7 +34,7 @@ export class FilesController {
   @Post()
   @Authenticated()
   uploadFiles(
-    @User('id') accountId: number,
+    @CurrentUser('id') accountId: number,
     @Body('workspaceId') workspaceId: number,
     @Body('parentId') parentId: number,
     @UploadedFiles() files: Array<Express.Multer.File>,
