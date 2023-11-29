@@ -1,5 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import urlcat from 'urlcat';
 
 import { TokensService } from '@/shared/modules/tokens';
 import { AccountsService, Account } from '@/shared/modules/accounts';
@@ -15,6 +17,7 @@ import { ClientDto } from './dto/client.dto';
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly configService: ConfigService,
     private readonly accountsService: AccountsService,
     private readonly tokensService: TokensService,
     private readonly tfaService: TfaService,
@@ -41,13 +44,15 @@ export class AuthService {
     return await this.login(account, client);
   }
 
-  // async loginByLink(
-  //   token: string,
-  //   client: ClientDto,
-  // ): Promise<LoginResponseDto> {
-  //   // get account by token
-  //   return await this.login(account, client);
-  // }
+  async loginByLink(
+    token: string,
+    client: ClientDto,
+  ): Promise<LoginResponseDto> {
+    const data = this.tokensService.verify(token) as any;
+    const account = await this.accountsService.getAccount(data.accountId);
+
+    return await this.login(account, client);
+  }
 
   async loginByProvider(
     account: Account,
@@ -86,6 +91,19 @@ export class AuthService {
     });
 
     return tokens;
+  }
+
+  async generateLoginLink(accountId: number) {
+    const token = this.tokensService.generate(
+      { accountId },
+      { expiresIn: '10m' },
+    );
+    const link = urlcat(this.configService.get('API_URL'), '/auth/login/link', {
+      token,
+      _method: 'POST',
+    });
+
+    return link;
   }
 
   private async checkCredentials(

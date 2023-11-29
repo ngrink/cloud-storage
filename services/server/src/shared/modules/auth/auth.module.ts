@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AccountsModule } from '@/shared/modules/accounts';
@@ -17,7 +17,11 @@ import {
 } from './strategies';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Session]), AccountsModule, TfaModule],
+  imports: [
+    TypeOrmModule.forFeature([Session]),
+    forwardRef(() => AccountsModule),
+    TfaModule,
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,

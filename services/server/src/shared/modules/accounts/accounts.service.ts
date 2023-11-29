@@ -1,5 +1,5 @@
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
@@ -14,15 +14,17 @@ import { Account } from './entities/account.entity';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { OAuthProvider } from '../auth';
+import { AuthService, OAuthProvider } from '../auth';
 
 @Injectable()
 export class AccountsService {
   constructor(
-    private readonly accountsRepository: AccountsRepository,
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
     private readonly mailService: MailService,
+    private readonly accountsRepository: AccountsRepository,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
   ) {}
 
   async createAccount(data: CreateAccountDto): Promise<Account> {
@@ -211,8 +213,9 @@ export class AccountsService {
       { token },
     );
 
+    const loginLink = await this.authService.generateLoginLink(account.id);
     await this.accountsRepository.createPasswordReset(account.id, token);
-    await this.mailService.sendPasswordResetMail(account, link);
+    await this.mailService.sendPasswordResetMail(account, link, loginLink);
   }
 
   async resetPassword(data: ResetPasswordDto): Promise<void> {

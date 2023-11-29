@@ -9,6 +9,18 @@ export class TokensService {
 
   constructor(private readonly configService: ConfigService) {}
 
+  generate(payload: object, options?: jwt.SignOptions) {
+    return jwt.sign(payload, this.configService.get('JWT_SECRET'), options);
+  }
+
+  verify(token: string) {
+    try {
+      return jwt.verify(token, this.configService.get('JWT_SECRET'));
+    } catch (error) {
+      return null;
+    }
+  }
+
   generateAccessToken(payload: object) {
     return jwt.sign(payload, this.configService.get('JWT_ACCESS_SECRET'), {
       expiresIn: this.isProduction ? '15m' : '1d',
