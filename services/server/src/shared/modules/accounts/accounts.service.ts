@@ -170,7 +170,7 @@ export class AccountsService {
 
     const token = uuid.v4();
     const link = urlcat(
-      this.configService.get('API_URL'),
+      this.configService.get('SERVICE_API_URL'),
       `/accounts/email/confirm`,
       {
         token,
@@ -208,7 +208,7 @@ export class AccountsService {
 
     const token = `${uuid.v4()}`;
     const link = urlcat(
-      this.configService.get('WEB_URL'),
+      this.configService.get('SERVICE_API_URL'),
       'accounts/password/reset',
       { token },
     );
@@ -248,7 +248,7 @@ export class AccountsService {
     );
 
     const verificationLink = urlcat(
-      this.configService.get('API_URL'),
+      this.configService.get('SERVICE_API_URL'),
       '/accounts/email/verify',
       {
         token,

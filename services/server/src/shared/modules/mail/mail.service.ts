@@ -12,7 +12,7 @@ export class MailService {
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
   ) {
-    this.host = configService.get('HOST');
+    this.host = configService.get('SERVICE_HOST');
   }
 
   async sendMail(sendMailOptions: ISendMailOptions) {

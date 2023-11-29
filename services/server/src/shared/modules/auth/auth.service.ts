@@ -98,10 +98,14 @@ export class AuthService {
       { accountId },
       { expiresIn: '10m' },
     );
-    const link = urlcat(this.configService.get('API_URL'), '/auth/login/link', {
-      token,
-      _method: 'POST',
-    });
+    const link = urlcat(
+      this.configService.get('SERVICE_API_URL'),
+      '/auth/login/link',
+      {
+        token,
+        _method: 'POST',
+      },
+    );
 
     return link;
   }
