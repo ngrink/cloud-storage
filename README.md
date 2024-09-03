@@ -1,6 +1,6 @@
 # cloud-storage-app
 
-> Cloud storage, service providing solutions for users to store, access, and share their data seamlessly across various devices  
+> Cloud storage, service providing users to store, access, and share their data seamlessly across various devices  
 > Related services: Yandex Disk, Google Drive, Dropbox
 
 ## Features
