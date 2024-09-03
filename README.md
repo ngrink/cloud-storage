@@ -15,6 +15,6 @@
 
 ## Technology Stack
 **Backend**:  
-Linux, Nginx, NodeJS  NestJS  
-REST API, TypeORM, Swagger, PassportJS, Bcrypt, JWT, Nodemailer
+Linux, Nginx, NodeJS, NestJS  
+REST API, TypeORM, Swagger, PassportJS, Bcrypt, JWT, Nodemailer  
 PostgreSQL, Redis
